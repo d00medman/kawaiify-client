@@ -1,8 +1,10 @@
 import React from 'react';
 // import ImageUploader from 'react-images-upload';
 import axios from 'axios';
+import { withAuth0 } from '@auth0/auth0-react';
 
-class ImageDisplayComponent extends React.Component {
+
+class MyImageDisplayComponent extends React.Component {
 
     constructor(props) {
         super(props)
@@ -14,18 +16,18 @@ class ImageDisplayComponent extends React.Component {
             picture: new Blob(),
         }
 
-        this.getImageData = this.getImageData.bind(this)
+        this.getMyImageData = this.getMyImageData.bind(this)
     }
 
     componentDidMount() {
         //Make API call here
-        this.getImageData(-1)
+        this.getMyImageData(-1)
     }
 
     async getImageData(id) {
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/get-image/${id}`,
+                `http://127.0.0.1:5000/get-my-image/${id}`,
                 { responseType: 'blob' }
             )
             console.log('response in getImageData')
@@ -49,6 +51,11 @@ class ImageDisplayComponent extends React.Component {
     }
 
     render() {
+        const { isAuthenticated } = this.props.auth0;
+        if (!isAuthenticated) {
+            return <h3>Please log in to view the images you've altered</h3>
+        }
+
         return (
             <div>
                 <h2>Images which have had effects applied to them</h2>
@@ -70,4 +77,4 @@ class ImageDisplayComponent extends React.Component {
     }
 }
 
-export default ImageDisplayComponent
+export default withAuth0(MyImageDisplayComponent)

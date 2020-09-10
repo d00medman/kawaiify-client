@@ -1,6 +1,7 @@
 import React from 'react';
 import ImageUploader from 'react-images-upload';
 import axios from 'axios';
+import { withAuth0 } from '@auth0/auth0-react';
 // import URL from ''
 
 // const Example = ({ data }) => <img src={URL.createObjectURL(data)} />
@@ -42,39 +43,48 @@ class ImagePreviewUploadComponent extends React.Component {
     // }
 
     async uploadPreview() {
-      var bodyFormData = new FormData();
-      bodyFormData.append('image', this.state.pictures[0]);
-      try {
-        const response = await axios.post(
-          'http://127.0.0.1:5000/preview-image',
-          bodyFormData,
-          { 
-            headers: { 'Content-Type': 'multipart/form-data' },
-            responseType: 'blob'
-          }
-        )
-        console.log('response in upload:')
+    
+        const { user } = this.props.auth0;
+        var bodyFormData = new FormData();
+
+        bodyFormData.append('image', this.state.pictures[0]);
+        bodyFormData.append('email', user.email);
+        console.log(bodyFormData)
+        try {
+            const response = await axios.post(
+                'http://127.0.0.1:5000/preview-image',
+                bodyFormData,
+                { 
+                  headers: { 'Content-Type': 'multipart/form-data' },
+                  responseType: 'blob'
+                }
+            )
+        // console.log('response in upload:')
         // console.log(response.data.blob())
 
         // console.log(`response data is type: ${typeof(response.data)}`)
 
-        this.setState({
-          // pictures: [],
-          preview: response.data,
-          hasPreview: true
-        },  () => {
-          console.log('state in set state')
-          console.log(this.state);
-        });
+            this.setState({
+              // pictures: [],
+              preview: response.data,
+              hasPreview: true
+            },  () => {
+              console.log('state in set state')
+              console.log(this.state);
+            });
 
         // this.clearImage()
-      } catch(error) {
-        console.log('error in upload:')
-        console.log(error)
-      }
+        } catch(error) {
+            console.log('error in upload:')
+            console.log(error)
+        }
     }
  
     render() {
+        const { isAuthenticated } = this.props.auth0;
+        if (!isAuthenticated) {
+            return <h3>Please log in to add effects to images</h3>
+        }
         return (
           <div>
             <h2>Preview your image</h2>
@@ -117,4 +127,4 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 }
 
-export default ImagePreviewUploadComponent;
+export default withAuth0(ImagePreviewUploadComponent);
