@@ -45,7 +45,6 @@ class ImageDisplayComponent extends React.Component {
             console.log('error in getImageData')
             console.log(error)
         }
-        
     }
 
     render() {

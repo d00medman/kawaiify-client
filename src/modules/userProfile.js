@@ -83,13 +83,6 @@ const Profile = () => {
         ) : (
             <LoginButton/>
         )}
-
-        {userMetadata ? (
-          <pre>{JSON.stringify(userMetadata, null, 2)}</pre>
-        ) : (
-          <p>No user metadata defined</p>
-        )}
-
       </div>
   );
 };
