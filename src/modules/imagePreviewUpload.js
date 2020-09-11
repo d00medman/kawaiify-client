@@ -2,23 +2,29 @@ import React from 'react';
 import ImageUploader from 'react-images-upload';
 import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
+import Select from 'react-select';
 // import URL from ''
 
 // const Example = ({ data }) => <img src={URL.createObjectURL(data)} />
  
 class ImagePreviewUploadComponent extends React.Component {
- 
+    allEffects = [
+      {'value': 'dnn_sparkle', 'label': 'Accurate Sparkles'},
+      {'value': 'haar_sparkle', 'label': 'Less Accurate Sparkles'},
+      {'value': 'circle', 'label': 'Circlify'}
+    ]
+
     constructor(props) {
         super(props);
          this.state = { 
            pictures: [],
            hasPreview: false,
            preview: new Blob(),
-
-        //    display: []
+           chosenEffects: []
          };
          this.onDrop = this.onDrop.bind(this);
          this.uploadPreview = this.uploadPreview.bind(this)
+         this.chooseEffect = this.chooseEffect.bind(this)
          this.imageUploader = React.createRef()
     }
  
@@ -26,7 +32,7 @@ class ImagePreviewUploadComponent extends React.Component {
         this.setState({
             pictures: picture 
         },  () => {
-          console.log('state in set state')
+          console.log('state in onDrop')
           console.log(this.state.pictures);
         });
     }
@@ -35,21 +41,40 @@ class ImagePreviewUploadComponent extends React.Component {
       this.imageUploader.current.clearPictures();
     }
 
-    // async upload() {
-        
-    //     console.log('response in update')
-    //     console.log(response)
-        
-    // }
+    chooseEffect(effect) {
+      console.log('start chooseEffect')
+      console.log(effect)
+      const newEffect = effect[effect.length - 1].value
+      // console.log(`hits choose effect with value: ${effect}`)
+      // let effects = 
+      if (!this.state.chosenEffects.includes(newEffect)) {
+        const effects = this.state.chosenEffects
+        console.log(effects)
+        effects.push(newEffect)
+        console.log('post push')
+        console.log(effects)
+        this.setState({
+          chosenEffects: effects,
+        },  () => {
+          console.log('state in chooseEffect')
+          console.log(this.state);
+        });
+      }
+      // const newEffects = Array.from(new Set(effects))
+      
+    }
 
     async uploadPreview() {
     
         const { user } = this.props.auth0;
         var bodyFormData = new FormData();
-
+        const chosenEffects = this.state.chosenEffects.join(',')
+        // .map(a => a.name);
+        console.log(chosenEffects)
         bodyFormData.append('image', this.state.pictures[0]);
         bodyFormData.append('email', user.email);
-        console.log(bodyFormData)
+        bodyFormData.append('effects', chosenEffects)
+        // console.log(bodyFormData)
         try {
             const response = await axios.post(
                 'http://127.0.0.1:5000/preview-image',
@@ -59,17 +84,13 @@ class ImagePreviewUploadComponent extends React.Component {
                   responseType: 'blob'
                 }
             )
-        // console.log('response in upload:')
-        // console.log(response.data.blob())
-
-        // console.log(`response data is type: ${typeof(response.data)}`)
 
             this.setState({
               // pictures: [],
               preview: response.data,
               hasPreview: true
             },  () => {
-              console.log('state in set state')
+              console.log('state in uploadPreview')
               console.log(this.state);
             });
 
@@ -79,12 +100,36 @@ class ImagePreviewUploadComponent extends React.Component {
             console.log(error)
         }
     }
+
+    // effectSelector() {
+    //   const allEffects = this.allEffects.map((effect) =>
+    //     // <option value={effect.name} onChange={async () => {await this.chooseEffect(effect);}}>{effect.display_name}</option>
+    //     <option name={effect.name} value={effect.name} onChange={e => this.chooseEffect(e.target.name)}>{effect.display_name}</option>
+    //   )
+
+    //   const chosenEffects = this.state.chosenEffects.map((effect) =>
+    //     <li>{effect.name}</li>
+    //   )
+      
+    //   return (
+    //     <div>
+    //       <select id="effects">
+    //           {allEffects}
+    //       </select>
+    //       <ul>
+    //         {chosenEffects}
+    //       </ul>
+    //     </div>
+    //   )
+    // }
  
     render() {
         const { isAuthenticated } = this.props.auth0;
         if (!isAuthenticated) {
             return <h3>Please log in to add effects to images</h3>
         }
+        const { chosenEffects } = this.state;
+
         return (
           <div>
             <h2>Preview your image</h2>
@@ -103,11 +148,20 @@ class ImagePreviewUploadComponent extends React.Component {
                 <div class="row">
                   <div class="column">
                     {this.state.pictures.length >= 1 && 
-                        <button className="btn btn-success"
-                          onClick={async () => {await this.uploadPreview();} }
-                        >
-                          Preview
-                        </button>}
+                        <div>
+                          <Select
+                            value={chosenEffects}
+                            onChange={this.chooseEffect}
+                            options={this.allEffects}
+                            isMulti={true}
+                          />
+                          <button className="btn btn-success"
+                            onClick={async () => {await this.uploadPreview();} }
+                          >
+                            Preview
+                          </button>
+                        </div>
+                      }
                   </div>
                 </div>
                 {/* <div class="column">
