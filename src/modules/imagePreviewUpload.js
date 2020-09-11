@@ -26,7 +26,7 @@ class ImagePreviewUploadComponent extends React.Component {
            chosenEffects: []
          };
          this.onDrop = this.onDrop.bind(this);
-         this.uploadPreview = this.uploadPreview.bind(this)
+         this.uploadImage = this.uploadImage.bind(this)
          this.chooseEffects = this.chooseEffects.bind(this)
          this.imageUploader = React.createRef()
     }
@@ -59,7 +59,7 @@ class ImagePreviewUploadComponent extends React.Component {
       });      
     }
 
-    async uploadPreview() {
+    async uploadImage() {
     
         const { user } = this.props.auth0;
         var bodyFormData = new FormData();
@@ -74,7 +74,7 @@ class ImagePreviewUploadComponent extends React.Component {
         // console.log(bodyFormData)
         try {
             const response = await axios.post(
-                'http://127.0.0.1:5000/preview-image',
+                'http://127.0.0.1:5000/upload-image',
                 bodyFormData,
                 { 
                   headers: { 'Content-Type': 'multipart/form-data' },
@@ -161,7 +161,7 @@ class ImagePreviewUploadComponent extends React.Component {
                         isMulti={true}
                         styles={selectStyles}
                       />
-                      <button style={uploadButtonStyle} onClick={async () => {await this.uploadPreview()} }>
+                      <button style={uploadButtonStyle} onClick={async () => {await this.uploadImage()} }>
                         Upload
                       </button>
                     </div>}

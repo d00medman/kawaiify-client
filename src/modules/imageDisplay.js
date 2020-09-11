@@ -23,6 +23,7 @@ class ImageDisplayComponent extends React.Component {
     }
 
     async getImageData(id) {
+        console.log(`id in getImageData: ${id}`)
         try {
             const response = await axios.get(
                 `http://127.0.0.1:5000/get-image/${id}`,
@@ -52,7 +53,7 @@ class ImageDisplayComponent extends React.Component {
         const listSelectorStyle = CSS.listSelectorStyle()
         const imageDisplayStyle = CSS.imageDisplayStyle()
         const mainHeadlineStyle = CSS.mainHeadlineStyle()
-        
+
         const showPrevious = this.state.id > 1
         const showNext = this.state.id < this.state.maxImageID
 

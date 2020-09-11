@@ -133,9 +133,9 @@ class App extends React.Component {
           <header style={headerStyle}>
             <Profile />
           </header>
-          <body style={appStyle}>
+          <div style={appStyle}>
             {this.currentMainDisplay()}
-          </body>
+          </div>
           <footer style={footerStyle}>
             <div style={footerStyle}>
               <p style={paragraphStyle}>UWU sowwy I need to figure out what to put hewe</p>

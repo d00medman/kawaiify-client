@@ -48,6 +48,7 @@ class MyImageDisplayComponent extends React.Component {
     }
 
     async getNextUserImageData(id, newImageIndex) {
+        console.log(`id in getNextUserImageData: ${id}`)
         try {
             const response = await axios.get(
                 `http://127.0.0.1:5000/get-image/${id}`,
@@ -69,7 +70,7 @@ class MyImageDisplayComponent extends React.Component {
     }
 
     async getMyImageData() {
-        // console.log('start of getMyImageData')
+        console.log('start of getMyImageData')
         const { isAuthenticated, user } = this.props.auth0;
         if (!isAuthenticated) {
             console.log(`not authenticated`)
