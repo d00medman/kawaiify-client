@@ -11,7 +11,9 @@ import CSS from '../css.js'
 class ImagePreviewUploadComponent extends React.Component {
     allEffects = [
       {'value': 'dnn_sparkle', 'label': 'Accurate Sparkles'},
+      {'value': 'dnn_googly', 'label': 'Accurate Googly Eyes'},
       {'value': 'haar_sparkle', 'label': 'Less Accurate Sparkles'},
+      {'value': 'haar_googly', 'label': 'Less Accurate Googly Eyes'},
       {'value': 'circle', 'label': 'Circlify'}
     ]
 
@@ -25,7 +27,7 @@ class ImagePreviewUploadComponent extends React.Component {
          };
          this.onDrop = this.onDrop.bind(this);
          this.uploadPreview = this.uploadPreview.bind(this)
-         this.chooseEffect = this.chooseEffect.bind(this)
+         this.chooseEffects = this.chooseEffects.bind(this)
          this.imageUploader = React.createRef()
     }
  
@@ -39,38 +41,32 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 
     clearImage() {
-      this.imageUploader.current.clearPictures();
+      // this.imageUploader.current.clearPictures();
+      this.setState({
+        chosenEffects: [],
+      },  () => {
+        console.log('state in clearImage')
+        console.log(this.state);
+      });
     }
 
-    chooseEffect(effect) {
-      console.log('start chooseEffect')
-      console.log(effect)
-      const newEffect = effect[effect.length - 1].value
-      // console.log(`hits choose effect with value: ${effect}`)
-      // let effects = 
-      if (!this.state.chosenEffects.includes(newEffect)) {
-        const effects = this.state.chosenEffects
-        console.log(effects)
-        effects.push(newEffect)
-        console.log('post push')
-        console.log(effects)
-        this.setState({
-          chosenEffects: effects,
-        },  () => {
-          console.log('state in chooseEffect')
-          console.log(this.state);
-        });
-      }
-      // const newEffects = Array.from(new Set(effects))
-      
+    chooseEffects(effects) {
+      this.setState({
+        chosenEffects: effects,
+      },  () => {
+        console.log('state in chooseEffect')
+        console.log(this.state);
+      });      
     }
 
     async uploadPreview() {
     
         const { user } = this.props.auth0;
         var bodyFormData = new FormData();
-        const chosenEffects = this.state.chosenEffects.join(',')
+        // console.log(this.state.chosenEffects)
+        const chosenEffects = this.state.chosenEffects.map(a => a.value).join(',')
         // .map(a => a.name);
+        // console.log('chosen effects')
         console.log(chosenEffects)
         bodyFormData.append('image', this.state.pictures[0]);
         bodyFormData.append('email', user.email);
@@ -95,7 +91,7 @@ class ImagePreviewUploadComponent extends React.Component {
               console.log(this.state);
             });
 
-        // this.clearImage()
+        this.clearImage()
         } catch(error) {
             console.log('error in upload:')
             console.log(error)
@@ -117,7 +113,26 @@ class ImagePreviewUploadComponent extends React.Component {
         const imageDisplayStyle = CSS.imageDisplayStyle()
         const imageUploaderRightStyle = CSS.imageUploadComponentStyle('right')
         const mainHeadlineStyle = CSS.mainHeadlineStyle()
+
+        const selectStyles = {
+          option: (provided, state) => ({
+            ...provided,
+            borderBottom: '1px dotted pink',
+            color: state.isSelected ? 'red' : 'blue',
+            padding: 20,
+          }),
+          control: () => ({
+            // none of react-select's styles are passed to <Control />
+            width: 200,
+          }),
+          multiValue: (provided, state) => {
+            const opacity = state.isDisabled ? 0.5 : 1;
+            const transition = 'opacity 300ms';
         
+            return { ...provided, opacity, transition };
+          }
+        }
+
         return (
           <div>
             <div style={listDisplayStyle}>
@@ -141,10 +156,10 @@ class ImagePreviewUploadComponent extends React.Component {
                     <div>
                       <Select
                         value={chosenEffects}
-                        onChange={this.chooseEffect}
+                        onChange={this.chooseEffects}
                         options={this.allEffects}
                         isMulti={true}
-                        styles={fileUploaderStyle}
+                        styles={selectStyles}
                       />
                       <button style={uploadButtonStyle} onClick={async () => {await this.uploadPreview()} }>
                         Upload
