@@ -5,7 +5,7 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { Auth0Provider } from "@auth0/auth0-react";
 
-console.log(window.location.origin)
+// console.log(window.location.origin)
 
 ReactDOM.render(
   <Auth0Provider

@@ -3,6 +3,7 @@ import ImageUploader from 'react-images-upload';
 import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
 import Select from 'react-select';
+import CSS from '../css.js'
 // import URL from ''
 
 // const Example = ({ data }) => <img src={URL.createObjectURL(data)} />
@@ -100,81 +101,62 @@ class ImagePreviewUploadComponent extends React.Component {
             console.log(error)
         }
     }
-
-    // effectSelector() {
-    //   const allEffects = this.allEffects.map((effect) =>
-    //     // <option value={effect.name} onChange={async () => {await this.chooseEffect(effect);}}>{effect.display_name}</option>
-    //     <option name={effect.name} value={effect.name} onChange={e => this.chooseEffect(e.target.name)}>{effect.display_name}</option>
-    //   )
-
-    //   const chosenEffects = this.state.chosenEffects.map((effect) =>
-    //     <li>{effect.name}</li>
-    //   )
-      
-    //   return (
-    //     <div>
-    //       <select id="effects">
-    //           {allEffects}
-    //       </select>
-    //       <ul>
-    //         {chosenEffects}
-    //       </ul>
-    //     </div>
-    //   )
-    // }
  
     render() {
         const { isAuthenticated } = this.props.auth0;
         if (!isAuthenticated) {
             return <h3>Please log in to add effects to images</h3>
         }
+
         const { chosenEffects } = this.state;
 
+        const listDisplayStyle = CSS.listDisplayStyle('10px')
+        const imageUploaderLeftStyle = CSS.imageUploadComponentStyle('left') 
+        const uploadButtonStyle = CSS.filledButtonStyle('#6be8c7') 
+        const fileUploaderStyle = CSS.fileUploaderStyle()
+        const imageDisplayStyle = CSS.imageDisplayStyle()
+        const imageUploaderRightStyle = CSS.imageUploadComponentStyle('right')
+        const mainHeadlineStyle = CSS.mainHeadlineStyle()
+        
         return (
           <div>
-            <h2>Preview your image</h2>
-            <div class="row">
-              <div class="column">
-                <ImageUploader
-                  withIcon={true}
-                  withPreview={true}
-                  singleImage={true}
-                  buttonText='Choose image'
-                  onChange={this.onDrop}
-                  imgExtension={['.jpg', '.gif', '.png', '.gif']}
-                  maxFileSize={5242880}
-                  ref={this.imageUploader}
-                />
-                <div class="row">
-                  <div class="column">
-                    {this.state.pictures.length >= 1 && 
-                        <div>
-                          <Select
-                            value={chosenEffects}
-                            onChange={this.chooseEffect}
-                            options={this.allEffects}
-                            isMulti={true}
-                          />
-                          <button className="btn btn-success"
-                            onClick={async () => {await this.uploadPreview();} }
-                          >
-                            Preview
-                          </button>
-                        </div>
-                      }
-                  </div>
+            <div style={listDisplayStyle}>
+                <h3 style={mainHeadlineStyle}>Kawaiify an image</h3>
+            </div>
+            <div>
+              <div>
+                <div style={imageUploaderLeftStyle}>
+                  <ImageUploader
+                    withIcon={true}
+                    withPreview={true}
+                    singleImage={true}
+                    buttonText='Choose image'
+                    onChange={this.onDrop}
+                    imgExtension={['.jpg', '.jpeg', '.png']}
+                    maxFileSize={5242880}
+                    ref={this.imageUploader}
+                    style={fileUploaderStyle}
+                  />
+                  {this.state.pictures.length >= 1 && 
+                    <div>
+                      <Select
+                        value={chosenEffects}
+                        onChange={this.chooseEffect}
+                        options={this.allEffects}
+                        isMulti={true}
+                        styles={fileUploaderStyle}
+                      />
+                      <button style={uploadButtonStyle} onClick={async () => {await this.uploadPreview()} }>
+                        Upload
+                      </button>
+                    </div>}
                 </div>
-                {/* <div class="column">
-                <button className="btn btn-success"
-                      onClick={async () => {await this.upload();} }
-                    >
-                      Upload
-                    </button>
-                </div> */}
+                <div style={imageUploaderRightStyle}>
+                  {this.state.hasPreview && 
+                    <img style={imageDisplayStyle} src={ URL.createObjectURL(this.state.preview)} class="preview" />}
+                </div>
               </div>
-              <div class="column">
-                {this.state.hasPreview && <img src={ URL.createObjectURL(this.state.preview)} class="preview" />}
-              </div>
+              
             </div>
           </div>
         );

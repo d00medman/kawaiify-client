@@ -1,38 +1,31 @@
 import React, { useEffect, useState }  from "react";
 import { useAuth0 } from "@auth0/auth0-react";
+import CSS from '../css.js'
 
 const LoginButton = () => {
   const { loginWithRedirect } = useAuth0();
 
-  return <button onClick={() => loginWithRedirect()}>Log In</button>;
-};
+  const loginButtonStyle = CSS.filledButtonStyle('#6be8c7') 
 
-// export default LoginButton;
+  return <button style={loginButtonStyle} onClick={() => loginWithRedirect()}>Log In</button>;
+};
 
 const LogoutButton = () => {
     const { logout } = useAuth0();
-  
+
+    const logoutButtonStyle = CSS.filledButtonStyle('#eb726a')
+
     return (
-      <button onClick={() => logout({ returnTo: window.location.origin })}>
+      <button className="button" style={logoutButtonStyle} onClick={() => logout({ returnTo: window.location.origin })}>
         Log Out
       </button>
     );
   };
-  
-//   export default LogoutButton;
-
-//   import React from "react";
-// import { useAuth0 } from "@auth0/auth0-react";
 
 
 const Profile = () => {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
   const [userMetadata, setUserMetadata] = useState(null);
-
-//   console.log('profile')
-//   console.log(user)
-//   console.log(isAuthenticated)
-//   console.log(isLoading)
 
   useEffect(() => {
     const getUserMetadata = async () => {
@@ -63,26 +56,32 @@ const Profile = () => {
     getUserMetadata();
   }, []);
   
-
-//   if (isLoading) {
-//     return <div>Loading ...</div>;
-//   }
-
-  
+  const headerStyle = CSS.headerStyle()
+  const navbarLeftStyle = CSS.navbarStyle('left') 
+  const navbarRightStyle = CSS.navbarStyle('right')
+  const mainHeadlineStyle = CSS.mainHeadlineStyle()
 
   return (
-    
-      <div>
-        {isAuthenticated ? (
+      <div style={headerStyle}>
+        <div style={navbarLeftStyle}>
+            <h1 style={mainHeadlineStyle}>Kawaiify</h1>
+            <p>Make all your pictures desu desu sugoi (◕‿◕✿)</p>
+          </div>
+          {isAuthenticated ? (
             <div>
-                <LogoutButton />
-                <img src={user.picture} alt={user.name} />
-                <h2>{user.name}</h2>
-                <p>{user.email}</p>
+              <div style={navbarRightStyle}>
+                  <img src={user.picture} alt={user.name} />
+              </div>
+              <div style={navbarRightStyle}>
+                  <p>{user.email}</p>
+                  <LogoutButton />
+              </div>
             </div>
-        ) : (
-            <LoginButton/>
-        )}
+          ) : (
+              <div style={navbarRightStyle}>
+                <LoginButton/>
+              </div>
+          )}
       </div>
   );
 };

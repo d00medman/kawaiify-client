@@ -1,6 +1,7 @@
 import React from 'react';
 // import ImageUploader from 'react-images-upload';
 import axios from 'axios';
+import CSS from '../css.js'
 
 class ImageDisplayComponent extends React.Component {
 
@@ -18,7 +19,6 @@ class ImageDisplayComponent extends React.Component {
     }
 
     componentDidMount() {
-        //Make API call here
         this.getImageData(-1)
     }
 
@@ -48,22 +48,32 @@ class ImageDisplayComponent extends React.Component {
     }
 
     render() {
+        const listDisplayStyle = CSS.listDisplayStyle('10px')
+        const listSelectorStyle = CSS.listSelectorStyle()
+        const imageDisplayStyle = CSS.imageDisplayStyle()
+        const mainHeadlineStyle = CSS.mainHeadlineStyle()
+        
+        const showPrevious = this.state.id > 1
+        const showNext = this.state.id < this.state.maxImageID
+
         return (
             <div>
-                <h2>Images which have had effects applied to them</h2>
-                <img src={ URL.createObjectURL(this.state.picture)} class="preview" />
-                {this.state.id > 1 &&
-                    <button className="btn btn-success"
-                        onClick={async () => {await this.getImageData(this.state.id - 1);} }
-                    >
-                        Previous
-                    </button>}
-                {this.state.id < this.state.maxImageID && 
-                    <button className="btn btn-success"
-                      onClick={async () => {await this.getImageData(this.state.id + 1);} }
-                    >
-                      Next
-                    </button>}
+                <div style={listDisplayStyle}>
+                    <h3 style={mainHeadlineStyle}>All images kawaiified by users</h3>
+                </div>
+
+                <img style={imageDisplayStyle} src={ URL.createObjectURL(this.state.picture)} class="preview" />
+                
+                <div style={listDisplayStyle}>
+                    {showPrevious &&
+                        <button style={listSelectorStyle} onClick={async () => {await this.getImageData(this.state.id - 1);}}>
+                            Previous
+                        </button>}
+                    {showNext && 
+                        <button style={listSelectorStyle} onClick={async () => {await this.getImageData(this.state.id + 1);}}>
+                          Next
+                        </button>}
+                </div>
             </div>
         )
     }
