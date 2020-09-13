@@ -25,7 +25,7 @@ const LogoutButton = () => {
 
 const Profile = () => {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
-  const [setUserMetadata] = useState(null);
+  const [userMetadata, setUserMetadata] = useState(null);
 
   useEffect(() => {
     const getUserMetadata = async () => {
@@ -65,7 +65,7 @@ const Profile = () => {
       <div style={headerStyle}>
         <div style={navbarLeftStyle}>
             <h1 style={mainHeadlineStyle}>Kawaiify</h1>
-            <p>Make all your pictures desu desu sugoi (◕‿◕✿)</p>
+            <p>(◕‿◕✿)</p>
           </div>
           {isAuthenticated ? (
             <div>

@@ -24,12 +24,15 @@ class ImagePreviewUploadComponent extends React.Component {
            hasPreview: false,
            preview: new Blob(),
            imageId: 0,
-           chosenEffects: []
+           chosenEffects: [],
+           imageName: ''
          };
          this.onDrop = this.onDrop.bind(this);
          this.uploadImage = this.uploadImage.bind(this)
          this.chooseEffects = this.chooseEffects.bind(this)
+         this.changeImageName = this.changeImageName.bind(this)
          this.imageUploader = React.createRef()
+         
     }
  
     onDrop(picture) {
@@ -45,6 +48,7 @@ class ImagePreviewUploadComponent extends React.Component {
       this.imageUploader.current.clearPictures();
       this.setState({
         chosenEffects: [],
+        imageName: ''
       },  () => {
         console.log('state in clearImage')
         console.log(this.state);
@@ -61,23 +65,26 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 
     async uploadImage() {
-        const { user } = this.props.auth0;
+        const { user, getAccessTokenSilently  } = this.props.auth0;
+        const { chosenEffects, pictures, imageName} = this.state
+
         var bodyFormData = new FormData();
-        // console.log(this.state.chosenEffects)
-        const chosenEffects = this.state.chosenEffects.map(a => a.value).join(',')
-        // .map(a => a.name);
-        // console.log('chosen effects')
-        console.log(chosenEffects)
-        bodyFormData.append('image', this.state.pictures[0]);
+        bodyFormData.append('image', pictures[0]);
         bodyFormData.append('email', user.email);
-        bodyFormData.append('effects', chosenEffects)
-        // console.log(bodyFormData)
+        bodyFormData.append('effects', chosenEffects.map(a => a.value).join(','))
+        bodyFormData.append('file_name', imageName)
+
+        const token = await getAccessTokenSilently()
+
         try {
             const response = await axios.post(
                 'http://127.0.0.1:5000/upload-image',
                 bodyFormData,
                 { 
-                  headers: { 'Content-Type': 'multipart/form-data' },
+                  headers: { 
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`,
+                  },
                   responseType: 'blob'
                 }
             )
@@ -102,24 +109,27 @@ class ImagePreviewUploadComponent extends React.Component {
   // TODO: identical to the method with the same name in image display file
   async deleteMyImage(id) {
       console.log(`id in getNextUserImageData: ${id}`)
-      const { isAuthenticated } = this.props.auth0;
+      const { isAuthenticated, getAccessTokenSilently  } = this.props.auth0;
       if (!isAuthenticated) {
           console.log(`only authenticated users should be able to delete files`)
           return false
       }
+
+      const token = await getAccessTokenSilently()
 
       try {
           const response = await axios.get(
               `http://127.0.0.1:5000/delete-my-image-data/${id}`,
               { 
                   // responseType: 'blob', 
-                  // headers: { Pragma: 'no-cache'} 
+                  headers: { 
+                    Authorization: `Bearer ${token}`,
+                    // Pragma: 'no-cache'
+                  } 
               }
           )
           console.log('response in deleteMyImage')
           console.log(response)
-
-          // this.props.setDisplayList(true)
 
           this.setState({
             preview: new Blob(),
@@ -133,6 +143,15 @@ class ImagePreviewUploadComponent extends React.Component {
           console.log('error in deleteMyImage')
           console.log(error)
       }
+  }
+
+  changeImageName(event) {
+    this.setState({
+      imageName: event.target.value
+    },  () => {
+      console.log('state in changeImageName')
+      console.log(this.state);
+    });
   }
  
     render() {
@@ -199,6 +218,10 @@ class ImagePreviewUploadComponent extends React.Component {
                         isMulti={true}
                         styles={selectStyles}
                       />
+                      <label>
+                        Image Name:
+                        <input type="text" value={this.state.imageName} onChange={this.changeImageName} />
+                      </label>
                       <button style={uploadButtonStyle} onClick={async () => {await this.uploadImage()} }>
                         Upload
                       </button>

@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import CSS from '../css.js'
-import { withAuth0 } from '@auth0/auth0-react';
+import { withAuth0, useAuth0 } from '@auth0/auth0-react';
 
 class ImageDisplayComponent extends React.Component {
 
@@ -27,23 +27,29 @@ class ImageDisplayComponent extends React.Component {
 
     async deleteMyImage(id) {
         console.log(`id in getNextUserImageData: ${id}`)
-        const { isAuthenticated } = this.props.auth0;
+        const { isAuthenticated, getAccessTokenSilently } = this.props.auth0;
         if (!isAuthenticated) {
             console.log(`only authenticated users should be able to delete files`)
             return false
         }
 
+        const token = await getAccessTokenSilently()
+        console.log('get access token in delete my image')
+        console.log(token)
         try {
             const response = await axios.get(
                 `http://127.0.0.1:5000/delete-my-image-data/${id}`,
                 { 
                     // responseType: 'blob', 
-                    // headers: { Pragma: 'no-cache'} 
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        // Pragma: 'no-cache'
+                    } 
                 }
             )
             console.log('response in deleteMyImage')
             console.log(response)
-            if (response.stats === 200) {
+            if (response.stats === '200') {
                 // Redirects us back to the appropriate list view 
                 this.props.setDisplayList(true)
             } else {
@@ -137,20 +143,25 @@ class ImageDisplayComponent extends React.Component {
     }
 
     render() {
-        console.log('props in ImageDisplayComponent render:')
-        console.log(this.props)
-
+        // console.log('props in ImageDisplayComponent render:')
+        // console.log(this.props)
+        const listDisplayStyle = CSS.listDisplayStyle('10px')
         const listHeadline = this.props.isMyImage ? this.state.name : `${this.state.name} - created by ${this.state.creator}`
 
         return (
             <div>
-                <div style={CSS.listDisplayStyle('10px')}>
+                <div style={listDisplayStyle}>
                     <h3 style={CSS.mainHeadlineStyle()}>{listHeadline}</h3>
                 </div>
 
-                <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} class="preview" />
+                <div style={listDisplayStyle}>
+                    <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} class="preview" />
+                </div>
 
-                {this.controlPanel()}
+                <div style={listDisplayStyle}>
+                    {this.controlPanel()}
+                </div>
+                
             </div>
         )
     }

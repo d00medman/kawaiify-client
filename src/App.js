@@ -51,6 +51,7 @@ class App extends React.Component {
 
   currentMainDisplay() {
     const { isAuthenticated } = this.props.auth0;
+    console.log(this.props.auth0)
 
     const listDisplayStyle = CSS.listDisplayStyle('0px')
 
