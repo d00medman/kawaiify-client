@@ -23,6 +23,7 @@ class ImagePreviewUploadComponent extends React.Component {
            pictures: [],
            hasPreview: false,
            preview: new Blob(),
+           imageId: 0,
            chosenEffects: []
          };
          this.onDrop = this.onDrop.bind(this);
@@ -41,7 +42,7 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 
     clearImage() {
-      // this.imageUploader.current.clearPictures();
+      this.imageUploader.current.clearPictures();
       this.setState({
         chosenEffects: [],
       },  () => {
@@ -60,7 +61,6 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 
     async uploadImage() {
-    
         const { user } = this.props.auth0;
         var bodyFormData = new FormData();
         // console.log(this.state.chosenEffects)
@@ -85,7 +85,8 @@ class ImagePreviewUploadComponent extends React.Component {
             this.setState({
               // pictures: [],
               preview: response.data,
-              hasPreview: true
+              hasPreview: true,
+              imageId: response.headers['image_id']
             },  () => {
               console.log('state in uploadPreview')
               console.log(this.state);
@@ -97,6 +98,42 @@ class ImagePreviewUploadComponent extends React.Component {
             console.log(error)
         }
     }
+
+  // TODO: identical to the method with the same name in image display file
+  async deleteMyImage(id) {
+      console.log(`id in getNextUserImageData: ${id}`)
+      const { isAuthenticated } = this.props.auth0;
+      if (!isAuthenticated) {
+          console.log(`only authenticated users should be able to delete files`)
+          return false
+      }
+
+      try {
+          const response = await axios.get(
+              `http://127.0.0.1:5000/delete-my-image-data/${id}`,
+              { 
+                  // responseType: 'blob', 
+                  // headers: { Pragma: 'no-cache'} 
+              }
+          )
+          console.log('response in deleteMyImage')
+          console.log(response)
+
+          // this.props.setDisplayList(true)
+
+          this.setState({
+            preview: new Blob(),
+            imageId: 0,
+            hasPreview: false,
+          },  () => {
+            console.log('state in getMyImageData')
+            console.log(this.state);
+          });
+      } catch(error) {
+          console.log('error in deleteMyImage')
+          console.log(error)
+      }
+  }
  
     render() {
         const { isAuthenticated } = this.props.auth0;
@@ -104,7 +141,7 @@ class ImagePreviewUploadComponent extends React.Component {
             return <h3>Please log in to add effects to images</h3>
         }
 
-        const { chosenEffects } = this.state;
+        const { chosenEffects, pictures, preview, hasPreview, imageId } = this.state;
 
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const imageUploaderLeftStyle = CSS.imageUploadComponentStyle('left') 
@@ -113,6 +150,7 @@ class ImagePreviewUploadComponent extends React.Component {
         const imageDisplayStyle = CSS.imageDisplayStyle()
         const imageUploaderRightStyle = CSS.imageUploadComponentStyle('right')
         const mainHeadlineStyle = CSS.mainHeadlineStyle()
+        const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
 
         const selectStyles = {
           option: (provided, state) => ({
@@ -152,7 +190,7 @@ class ImagePreviewUploadComponent extends React.Component {
                     ref={this.imageUploader}
                     style={fileUploaderStyle}
                   />
-                  {this.state.pictures.length >= 1 && 
+                  {pictures.length >= 1 && 
                     <div>
                       <Select
                         value={chosenEffects}
@@ -166,10 +204,13 @@ class ImagePreviewUploadComponent extends React.Component {
                       </button>
                     </div>}
                 </div>
-                <div style={imageUploaderRightStyle}>
-                  {this.state.hasPreview && 
-                    <img style={imageDisplayStyle} src={ URL.createObjectURL(this.state.preview)} class="preview" />}
-                </div>
+                {hasPreview && 
+                  <div style={imageUploaderRightStyle}>
+                      <img style={imageDisplayStyle} src={ URL.createObjectURL(preview)} />
+                      <button style={deleteImageStyle} onClick={async () => {this.deleteMyImage(imageId)}}>
+                            Delete
+                    </button>
+                  </div>}
               </div>
               
             </div>

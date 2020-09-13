@@ -1,17 +1,20 @@
 import React from 'react';
-// import ImageUploader from 'react-images-upload';
 import axios from 'axios';
 import CSS from '../css.js'
+import { withAuth0 } from '@auth0/auth0-react';
 
 class ImageDisplayComponent extends React.Component {
 
     constructor(props) {
         super(props)
 
+        // console.log('props in ImageDisplayComponent constructor:')
+        // console.log(props)
+
         this.state = {
-            id: null,
-            maxImageID: null,
+            id: props.imageId,
             name: '',
+            creator: '',
             picture: new Blob(),
         }
 
@@ -19,7 +22,71 @@ class ImageDisplayComponent extends React.Component {
     }
 
     componentDidMount() {
-        this.getImageData(-1)
+        this.getImageData(this.props.imageId)
+    }
+
+    async deleteMyImage(id) {
+        console.log(`id in getNextUserImageData: ${id}`)
+        const { isAuthenticated } = this.props.auth0;
+        if (!isAuthenticated) {
+            console.log(`only authenticated users should be able to delete files`)
+            return false
+        }
+
+        try {
+            const response = await axios.get(
+                `http://127.0.0.1:5000/delete-my-image-data/${id}`,
+                { 
+                    // responseType: 'blob', 
+                    // headers: { Pragma: 'no-cache'} 
+                }
+            )
+            console.log('response in deleteMyImage')
+            console.log(response)
+            if (response.stats === 200) {
+                // Redirects us back to the appropriate list view 
+                this.props.setDisplayList(true)
+            } else {
+                console.log('unsuccessful status code from server')
+            }
+
+            // Call the parent method to return to the list view
+        } catch(error) {
+            console.log('error in deleteMyImage')
+            console.log(error)
+        }
+    }
+
+    async reportImage(id) {
+        console.log(`id in reportImage: ${id}`)
+        // const { isAuthenticated } = this.props.auth0;
+        // if (!isAuthenticated) {
+        //     console.log(`only authenticated users should be able to delete files`)
+        //     return false
+        // }
+
+        try {
+            const response = await axios.get(
+                `http://127.0.0.1:5000/report-image/${id}`,
+                { 
+                    // responseType: 'blob', 
+                    // headers: { Pragma: 'no-cache'} 
+                }
+            )
+            console.log('response in reportImage')
+            console.log(response)
+
+            if (response.stats === 200) {
+                // Redirects us back to the appropriate list view 
+                this.props.setDisplayList(false)
+            } else {
+                console.log('unsuccessful status code from server')
+            }
+
+        } catch(error) {
+            console.log('error in deleteMyImage')
+            console.log(error)
+        }
     }
 
     async getImageData(id) {
@@ -30,14 +97,11 @@ class ImageDisplayComponent extends React.Component {
                 { responseType: 'blob' }
             )
             console.log('response in getImageData')
-            const maxImageID = response.headers['max_image_id'] ? parseInt(response.headers['max_image_id']) : this.state.maxImageID
-            console.log(response.headers)
+            console.log(response)
             this.setState({
-                id: parseInt(response.headers['image_id']),
                 picture: response.data,
                 name: response.headers['image_name'],
-                maxImageID: maxImageID
-                // this.state.display.concat() response.data 
+                creator: response.headers['image_creator']
             },  () => {
                 console.log('state in set state in list images')
                 console.log(this.state);
@@ -48,36 +112,48 @@ class ImageDisplayComponent extends React.Component {
         }
     }
 
-    render() {
+    controlPanel() {
+        const { isAuthenticated, user } = this.props.auth0;
         const listDisplayStyle = CSS.listDisplayStyle('10px')
-        const listSelectorStyle = CSS.listSelectorStyle()
-        const imageDisplayStyle = CSS.imageDisplayStyle()
-        const mainHeadlineStyle = CSS.mainHeadlineStyle()
+        const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
 
-        const showPrevious = this.state.id > 1
-        const showNext = this.state.id < this.state.maxImageID
+        if (isAuthenticated && this.props.isMyImage) {
+            return (
+                <div style={listDisplayStyle}>
+                    <button style={deleteImageStyle} onClick={async () => {this.deleteMyImage(this.state.id)}}>
+                            Delete
+                    </button>
+                </div>
+            )
+        }
+
+        return (
+            <div style={CSS.listDisplayStyle('10px')}>
+                    <button style={deleteImageStyle} onClick={async () => {this.reportImage(this.state.id)}}>
+                            Report
+                    </button>
+            </div>
+        )
+    }
+
+    render() {
+        console.log('props in ImageDisplayComponent render:')
+        console.log(this.props)
+
+        const listHeadline = this.props.isMyImage ? this.state.name : `${this.state.name} - created by ${this.state.creator}`
 
         return (
             <div>
-                <div style={listDisplayStyle}>
-                    <h3 style={mainHeadlineStyle}>All images kawaiified by users</h3>
+                <div style={CSS.listDisplayStyle('10px')}>
+                    <h3 style={CSS.mainHeadlineStyle()}>{listHeadline}</h3>
                 </div>
 
-                <img style={imageDisplayStyle} src={ URL.createObjectURL(this.state.picture)} class="preview" />
-                
-                <div style={listDisplayStyle}>
-                    {showPrevious &&
-                        <button style={listSelectorStyle} onClick={async () => {await this.getImageData(this.state.id - 1);}}>
-                            Previous
-                        </button>}
-                    {showNext && 
-                        <button style={listSelectorStyle} onClick={async () => {await this.getImageData(this.state.id + 1);}}>
-                          Next
-                        </button>}
-                </div>
+                <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} class="preview" />
+
+                {this.controlPanel()}
             </div>
         )
     }
 }
 
-export default ImageDisplayComponent
+export default withAuth0(ImageDisplayComponent)

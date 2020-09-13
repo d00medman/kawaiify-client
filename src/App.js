@@ -1,10 +1,9 @@
 import React from 'react';
 import ImagePreviewUploadComponent from './modules/imagePreviewUpload.js'
-import ImageDisplayComponent from './modules/imageDisplay.js'
-import MyImageDisplayComponent from './modules/myImageDisplay.js'
 import Profile from './modules/userProfile.js'
 import { withAuth0 } from '@auth0/auth0-react';
 import CSS from './css.js'
+import ImageListComponent from './modules/imageList.js'
  
 class App extends React.Component {
 
@@ -12,45 +11,22 @@ class App extends React.Component {
     super(props)
 
     this.state = {
-      currentMainDisplay: 1,
-      currentDisplayList: 1
+      kawaiifyImageComponent: false,
     }
 
-    this.currentDisplayList = this.currentDisplayList.bind(this)
     this.setDisplay = this.setDisplay.bind(this)
-    // this.setCurrentDisplayListToAll = this.setCurrentDisplayListToAll.bind(this)
-    this.listDisplaySwitch = this.listDisplaySwitch.bind(this)
   }
 
-  setDisplay(mainValue, listValue) {
-      this.setState({
-        currentDisplayList: listValue,
-        currentMainDisplay: mainValue
+  setDisplay(kawaiifyImageComponent) {
+    this.setState({
+      kawaiifyImageComponent
     },  () => {
-        console.log('state setDisplay')
-        console.log(this.state);
+      console.log('state of top level app in setDisplay')
+      console.log(this.state);
     });
   }
 
-  listDisplaySwitch() {
-    const { isAuthenticated } = this.props.auth0;
-    if (!isAuthenticated) {
-      return
-    }
-    
-    const listSelectorStyle = CSS.listSelectorStyle()
-
-    return (
-      <div>
-        <button style={listSelectorStyle} onClick={() => this.setDisplay(this.state.currentMainDisplay, 1)}>
-          All Altered Images
-        </button>
-        <button style={listSelectorStyle} onClick={() => this.setDisplay(this.state.currentMainDisplay, 2)}>
-          My Altered Images
-        </button>
-      </div>
-    )
-  }
+  
 
   mainDisplaySwitch() {
     const { isAuthenticated } = this.props.auth0;
@@ -63,10 +39,10 @@ class App extends React.Component {
 
     return (
       <div>
-        <button style={leftSelectorStyle} onClick={() => this.setDisplay(2, this.state.currentDisplayList)}>
+        <button style={leftSelectorStyle} onClick={() => this.setDisplay(true)}>
           Kawaiify Image
         </button>
-        <button style={rightSelectorStyle} onClick={() => this.setDisplay(1, this.state.currentDisplayList)}>
+        <button style={rightSelectorStyle} onClick={() => this.setDisplay(false)}>
           View Kawaiified Images
         </button>
       </div>
@@ -79,24 +55,23 @@ class App extends React.Component {
     const listDisplayStyle = CSS.listDisplayStyle('0px')
 
     if (!isAuthenticated) {
+      // If no authenticated user is signed in, return just the image list component
       return(
         <div style={listDisplayStyle}>
-          {this.currentDisplayList()}
+          <ImageListComponent />
         </div>
       )
     }
 
-    if (this.state.currentMainDisplay === 1) {
+    if (!this.state.kawaiifyImageComponent) {
       return (
         <div>
           <div style={listDisplayStyle}>
             {this.mainDisplaySwitch()}
           </div>
+          
           <div style={listDisplayStyle}>
-            {this.listDisplaySwitch()}
-          </div>
-          <div style={listDisplayStyle}>
-            {this.currentDisplayList()}
+            <ImageListComponent />
           </div>
         </div>
       )
@@ -113,35 +88,20 @@ class App extends React.Component {
       )
     }
   }
-
-  currentDisplayList() {
-    if (this.state.currentDisplayList === 2) {
-      return <MyImageDisplayComponent />
-    } else {
-      return <ImageDisplayComponent />
-    }
-  }
   
   render() {
-      const appStyle = CSS.appStyle()
-      const headerStyle = CSS.headerStyle()
-      const footerStyle = CSS.footerStyle()
       const paragraphStyle = CSS.paragraphStyle()
 
       return (
         <div>
-          <header style={headerStyle}>
-            <Profile />
-          </header>
-          <div style={appStyle}>
+          <Profile />
+          <div style={CSS.appStyle()}>
             {this.currentMainDisplay()}
           </div>
-          <footer style={footerStyle}>
-            <div style={footerStyle}>
-              <p style={paragraphStyle}>UWU sowwy I need to figure out what to put hewe</p>
-              <p style={paragraphStyle}>Might just be because of my machine, but the footer is ungodly large</p>
-            </div>
-          </footer>
+          <div style={CSS.footerStyle()}>
+            <p style={paragraphStyle}>Kawaiify is a simple image manipulation application requested as part of an interview for steg.ai</p>
+            <p style={paragraphStyle}>Please Kawaiify responsibly</p>
+          </div>
         </div>
       );
   }

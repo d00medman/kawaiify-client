@@ -16,7 +16,7 @@ const LogoutButton = () => {
     const logoutButtonStyle = CSS.filledButtonStyle('#eb726a')
 
     return (
-      <button className="button" style={logoutButtonStyle} onClick={() => logout({ returnTo: window.location.origin })}>
+      <button style={logoutButtonStyle} onClick={() => logout({ returnTo: window.location.origin })}>
         Log Out
       </button>
     );
@@ -25,7 +25,7 @@ const LogoutButton = () => {
 
 const Profile = () => {
   const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
-  const [userMetadata, setUserMetadata] = useState(null);
+  const [setUserMetadata] = useState(null);
 
   useEffect(() => {
     const getUserMetadata = async () => {

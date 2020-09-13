@@ -1,10 +1,13 @@
+// This is not best practice, but it was the quickest answer to the question of how I was to handle CSS
+
 class CSS {
     static mainDisplaySelectorStyle(float) {
         return {
             background: 'none',
             color: '#FFF',
             float: float,
-            border: 'none',
+            borderStyle: 'rounded',
+            borderColor: '#FFF',
             fontFamily: 'Bookman, URW Bookman L, serif',
             minWidth: '12em',
             paddingTop: '20px',
@@ -123,6 +126,24 @@ class CSS {
     static paragraphStyle() {
         return {
             fontFamily: "FreeMono, monospace"
+        }
+    }
+
+    static deleteImageStyle() {
+        return {
+            position: 'absolute',
+	        top: '-9px',
+	        right: '-9px',
+	        color: '#fff',
+	        background: '#ff4081',
+	        borderRadius: '50%',
+	        textAlign: 'center',
+	        cursor: 'pointer',
+	        fontSize: '26px',
+	        fontWeight: 'bold',
+	        lineHeight: '30px',
+	        width: '30px',
+	        height: '30px'
         }
     }
 }
