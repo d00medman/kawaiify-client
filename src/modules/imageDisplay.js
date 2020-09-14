@@ -155,7 +155,7 @@ class ImageDisplayComponent extends React.Component {
                 </div>
 
                 <div style={listDisplayStyle}>
-                    <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} class="preview" />
+                    <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} />
                 </div>
 
                 <div style={listDisplayStyle}>

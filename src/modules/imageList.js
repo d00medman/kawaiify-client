@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
 import CSS from '../css.js'
-
+import { Grid, Cell } from "styled-css-grid";
 import ImageDisplayComponent from './imageDisplay.js'
 
 class ImageListComponent extends React.Component {
@@ -14,6 +14,7 @@ class ImageListComponent extends React.Component {
             displayList: true,
             displayImageID: 0,
             myImages: false
+            // hold: new Blob()
         }
 
         this.getAllImageData = this.getAllImageData.bind(this)
@@ -71,6 +72,8 @@ class ImageListComponent extends React.Component {
             return false
         }
 
+        
+
         try {
             const response = await axios.get(
                 `http://127.0.0.1:5000/get-my-image-data/${user.email}`,
@@ -78,8 +81,13 @@ class ImageListComponent extends React.Component {
             )
             console.log('response in getUsersImageData')
             console.log(response)
+
+            const imageList = response.data.map((element) => (
+                this.imageDataWithBlob(element)
+            ));
+
             this.setState({
-                imageList: response.data
+                imageList: imageList
             },  () => {
                 console.log('state in set state in getUsersImageData')
                 console.log(this.state);
@@ -87,6 +95,18 @@ class ImageListComponent extends React.Component {
         } catch(error) {
             console.log('error in getUsersImageData')
             console.log(error)
+        }
+    }
+
+    imageDataWithBlob(image) {
+        const binaryString = window.atob(image.fileData); // Comment this if not using base64
+        const bytes = new Uint8Array(binaryString.length);
+        const b64arr = bytes.map((byte, i) => binaryString.charCodeAt(i));
+        const blob = new Blob([b64arr], { type: "image/png" })
+        return {
+            'id': image.id,
+            'displayName': image.displayName,
+            'fileBlob': blob
         }
     }
 
@@ -99,8 +119,17 @@ class ImageListComponent extends React.Component {
             )
             console.log('response in getAllImageData')
             console.log(response)
+            
+            const imageList = response.data.map((element) => (
+                this.imageDataWithBlob(element)
+            ));
+            
+            console.log('image list')
+            console.log(imageList)
+
             this.setState({
-                imageList: response.data
+                imageList: imageList,
+                // hold: blob
             },  () => {
                 console.log('state in set state in getAllImageData')
                 console.log(this.state);
@@ -153,14 +182,25 @@ class ImageListComponent extends React.Component {
             return isAuthenticated && myImages ? <h3>You have no Kawaiified images</h3> : <h3>No images have been kawaiified</h3>
         }
 
+        const gridStyle = CSS.gridStyle()
+        const gridItemStyle = CSS.gridItemStyle()
+        const imageStyle = CSS.imageListDisplayStyle()
+
         return (
-            <ul>
+            <Grid columns={4} gap="10px">
+                <Cell width={3}>
                 {imageList.map((image) =>
-                    <li>
-                        <a onClick={() => this.loadSingleImage(image.id)}>{image.fileName}</a>
-                    </li>
+                    
+                        <a onClick={() => this.loadSingleImage(image.id)}>
+                            <div>{image.displayName}</div>
+                            <div>
+                            <img style={imageStyle} src={ URL.createObjectURL(image.fileBlob)} />
+                            </div>
+                        </a>
+                    
                 )}
-            </ul>
+                </Cell>
+            </Grid>
         )
     }
 
@@ -192,6 +232,7 @@ class ImageListComponent extends React.Component {
         return (
             <div>
                 {currentDisplay}
+                
             </div>
             
         )

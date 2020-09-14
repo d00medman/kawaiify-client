@@ -33,6 +33,12 @@ class CSS {
         }
     }
 
+    static imageListDisplayStyle() {
+        return {
+            width: '100px'
+        }
+    }
+
     static imageDisplayStyle() {
         return {
             width: '550px'
@@ -144,6 +150,22 @@ class CSS {
 	        lineHeight: '30px',
 	        width: '30px',
 	        height: '30px'
+        }
+    }
+
+    static gridStyle() {
+        return {
+            display: 'grid',
+            gridTemplateRows: '150px 1fr 2fr 150px',
+            gridTemplateColumns: '150px 1fr 2fr 150px',
+            gridGap: '30px'
+        }
+    }
+
+    static gridItemStyle() {
+        return {
+            display: 'flex',
+            padding: '20px'
         }
     }
 }
