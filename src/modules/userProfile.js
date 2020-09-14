@@ -2,6 +2,8 @@ import React, { useEffect, useState }  from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import CSS from '../css.js'
 
+// Most of the code here is lifted from auth0's tutorials, hence the functional components, as opposed to the class components used in the rest of the app
+
 const LoginButton = () => {
   const { loginWithRedirect } = useAuth0();
 

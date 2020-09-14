@@ -4,9 +4,8 @@ import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
 import Select from 'react-select';
 import CSS from '../css.js'
-// import URL from ''
 
-// const Example = ({ data }) => <img src={URL.createObjectURL(data)} />
+// Indentation is a bit screwy in this file, and I didn't want to waste the time harmonizing it
  
 class ImagePreviewUploadComponent extends React.Component {
     allEffects = [
@@ -17,31 +16,31 @@ class ImagePreviewUploadComponent extends React.Component {
       {'value': 'circle', 'label': 'Circlify'}
     ]
 
+    // Component lifecycle functions
     constructor(props) {
-        super(props);
-         this.state = { 
-           pictures: [],
-           hasPreview: false,
-           preview: new Blob(),
-           imageId: 0,
-           chosenEffects: [],
-           imageName: ''
-         };
-         this.onDrop = this.onDrop.bind(this);
-         this.uploadImage = this.uploadImage.bind(this)
-         this.chooseEffects = this.chooseEffects.bind(this)
-         this.changeImageName = this.changeImageName.bind(this)
-         this.imageUploader = React.createRef()
-         
+      super(props);
+      this.state = { 
+        pictures: [],
+        hasPreview: false,
+        preview: new Blob(),
+        imageId: 0,
+        chosenEffects: [],
+        imageName: ''
+      };
+      this.onDrop = this.onDrop.bind(this);
+      this.uploadImage = this.uploadImage.bind(this)
+      this.chooseEffects = this.chooseEffects.bind(this)
+      this.changeImageName = this.changeImageName.bind(this)
+      this.imageUploader = React.createRef()  
     }
  
     onDrop(picture) {
-        this.setState({
-            pictures: picture 
-        },  () => {
-          console.log('state in onDrop')
-          console.log(this.state.pictures);
-        });
+      this.setState({
+          pictures: picture 
+      },  () => {
+        console.log('state in onDrop')
+        console.log(this.state.pictures);
+      });
     }
 
     clearImage() {
@@ -64,7 +63,14 @@ class ImagePreviewUploadComponent extends React.Component {
       });      
     }
 
-    async uploadImage() {
+  getAPIURLBase() {
+    const { apiUrl } = this.props
+    return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+  }
+
+
+  // API communication methods
+  async uploadImage() {
         const { user, getAccessTokenSilently  } = this.props.auth0;
         const { chosenEffects, pictures, imageName} = this.state
 
@@ -77,83 +83,79 @@ class ImagePreviewUploadComponent extends React.Component {
         const token = await getAccessTokenSilently()
 
         try {
-            const response = await axios.post(
-                'http://127.0.0.1:5000/upload-image',
-                bodyFormData,
-                { 
-                  headers: { 
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`,
-                  },
-                  responseType: 'blob'
-                }
-            )
+          const response = await axios.post(
+              `${this.getAPIURLBase()}/upload-image`,
+              bodyFormData,
+              { 
+                headers: { 
+                  'Content-Type': 'multipart/form-data',
+                  Authorization: `Bearer ${token}`,
+                },
+                responseType: 'blob'
+              }
+          )
+          this.setState({
+            preview: response.data,
+            hasPreview: true,
+            imageId: response.headers['image_id']
+          },  () => {
+            console.log('state in uploadPreview')
+            console.log(this.state);
+          });
 
-            this.setState({
-              // pictures: [],
-              preview: response.data,
-              hasPreview: true,
-              imageId: response.headers['image_id']
-            },  () => {
-              console.log('state in uploadPreview')
-              console.log(this.state);
-            });
-
-        this.clearImage()
+          this.clearImage()
         } catch(error) {
             console.log('error in upload:')
             console.log(error)
         }
     }
 
-  // TODO: identical to the method with the same name in image display file
-  async deleteMyImage(id) {
-      console.log(`id in getNextUserImageData: ${id}`)
-      const { isAuthenticated, getAccessTokenSilently  } = this.props.auth0;
-      if (!isAuthenticated) {
-          console.log(`only authenticated users should be able to delete files`)
-          return false
-      }
+    async deleteMyImage(id) {
+        console.log(`id in getNextUserImageData: ${id}`)
+        const { isAuthenticated, getAccessTokenSilently  } = this.props.auth0;
+        if (!isAuthenticated) {
+            console.log(`only authenticated users should be able to delete files`)
+            return false
+        }
 
-      const token = await getAccessTokenSilently()
+        const token = await getAccessTokenSilently()
 
-      try {
-          const response = await axios.get(
-              `http://127.0.0.1:5000/delete-my-image-data/${id}`,
-              { 
-                  // responseType: 'blob', 
-                  headers: { 
-                    Authorization: `Bearer ${token}`,
-                    // Pragma: 'no-cache'
-                  } 
-              }
-          )
-          console.log('response in deleteMyImage')
-          console.log(response)
+        try {
+            const response = await axios.get(
+                `${this.getAPIURLBase()}/delete-my-image-data/${id}`,
+                { 
+                    headers: { 
+                      Authorization: `Bearer ${token}`,
+                      // Pragma: 'no-cache'
+                    } 
+                }
+            )
+            console.log('response in deleteMyImage')
+            console.log(response)
 
-          this.setState({
-            preview: new Blob(),
-            imageId: 0,
-            hasPreview: false,
-          },  () => {
-            console.log('state in getMyImageData')
-            console.log(this.state);
-          });
-      } catch(error) {
-          console.log('error in deleteMyImage')
-          console.log(error)
-      }
-  }
+            this.setState({
+              preview: new Blob(),
+              imageId: 0,
+              hasPreview: false,
+            },  () => {
+              console.log('state in getMyImageData')
+              console.log(this.state);
+            });
+        } catch(error) {
+            console.log('error in deleteMyImage')
+            console.log(error)
+        }
+    }
 
-  changeImageName(event) {
-    this.setState({
-      imageName: event.target.value
-    },  () => {
-      console.log('state in changeImageName')
-      console.log(this.state);
-    });
-  }
- 
+    changeImageName(event) {
+      this.setState({
+        imageName: event.target.value
+      },  () => {
+        console.log('state in changeImageName')
+        console.log(this.state);
+      });
+    }
+  
     render() {
         const { isAuthenticated } = this.props.auth0;
         if (!isAuthenticated) {
@@ -161,7 +163,6 @@ class ImagePreviewUploadComponent extends React.Component {
         }
 
         const { chosenEffects, pictures, preview, hasPreview, imageId } = this.state;
-
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const imageUploaderLeftStyle = CSS.imageUploadComponentStyle('left') 
         const uploadButtonStyle = CSS.filledButtonStyle('#6be8c7') 
@@ -170,7 +171,7 @@ class ImagePreviewUploadComponent extends React.Component {
         const imageUploaderRightStyle = CSS.imageUploadComponentStyle('right')
         const mainHeadlineStyle = CSS.mainHeadlineStyle()
         const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
-
+        
         const selectStyles = {
           option: (provided, state) => ({
             ...provided,
@@ -185,7 +186,6 @@ class ImagePreviewUploadComponent extends React.Component {
           multiValue: (provided, state) => {
             const opacity = state.isDisabled ? 0.5 : 1;
             const transition = 'opacity 300ms';
-        
             return { ...provided, opacity, transition };
           }
         }
@@ -235,7 +235,6 @@ class ImagePreviewUploadComponent extends React.Component {
                     </button>
                   </div>}
               </div>
-              
             </div>
           </div>
         );

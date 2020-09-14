@@ -6,6 +6,7 @@ import CSS from './css.js'
 import ImageListComponent from './modules/imageList.js'
  
 class App extends React.Component {
+  prodAPIURL = 'https://steg-interview-project.ue.r.appspot.com'
 
   constructor(props) {
     super(props)
@@ -54,12 +55,13 @@ class App extends React.Component {
     console.log(this.props.auth0)
 
     const listDisplayStyle = CSS.listDisplayStyle('0px')
-
     if (!isAuthenticated) {
       // If no authenticated user is signed in, return just the image list component
       return(
         <div style={listDisplayStyle}>
-          <ImageListComponent />
+          <ImageListComponent 
+            prodAPIURL={this.productAPIURL}
+          />
         </div>
       )
     }
@@ -72,7 +74,9 @@ class App extends React.Component {
           </div>
           
           <div style={listDisplayStyle}>
-            <ImageListComponent />
+            <ImageListComponent
+              prodAPIURL={this.productAPIURL}
+            />
           </div>
         </div>
       )

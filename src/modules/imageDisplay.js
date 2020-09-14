@@ -1,16 +1,13 @@
 import React from 'react';
 import axios from 'axios';
 import CSS from '../css.js'
-import { withAuth0, useAuth0 } from '@auth0/auth0-react';
+import { withAuth0 } from '@auth0/auth0-react';
 
 class ImageDisplayComponent extends React.Component {
 
+    // component lifecycle functions
     constructor(props) {
         super(props)
-
-        // console.log('props in ImageDisplayComponent constructor:')
-        // console.log(props)
-
         this.state = {
             id: props.imageId,
             name: '',
@@ -25,6 +22,12 @@ class ImageDisplayComponent extends React.Component {
         this.getImageData(this.props.imageId)
     }
 
+    getAPIURLBase() {
+        const { apiUrl } = this.props
+        return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+    }
+
+    // API contact functions
     async deleteMyImage(id) {
         console.log(`id in getNextUserImageData: ${id}`)
         const { isAuthenticated, getAccessTokenSilently } = this.props.auth0;
@@ -38,12 +41,10 @@ class ImageDisplayComponent extends React.Component {
         console.log(token)
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/delete-my-image-data/${id}`,
+                `${this.getAPIURLBase()}/delete-my-image-data/${id}`,
                 { 
-                    // responseType: 'blob', 
                     headers: { 
                         Authorization: `Bearer ${token}`,
-                        // Pragma: 'no-cache'
                     } 
                 }
             )
@@ -55,8 +56,6 @@ class ImageDisplayComponent extends React.Component {
             } else {
                 console.log('unsuccessful status code from server')
             }
-
-            // Call the parent method to return to the list view
         } catch(error) {
             console.log('error in deleteMyImage')
             console.log(error)
@@ -64,20 +63,9 @@ class ImageDisplayComponent extends React.Component {
     }
 
     async reportImage(id) {
-        console.log(`id in reportImage: ${id}`)
-        // const { isAuthenticated } = this.props.auth0;
-        // if (!isAuthenticated) {
-        //     console.log(`only authenticated users should be able to delete files`)
-        //     return false
-        // }
-
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/report-image/${id}`,
-                { 
-                    // responseType: 'blob', 
-                    // headers: { Pragma: 'no-cache'} 
-                }
+                `${this.getAPIURLBase()}/report-image/${id}`
             )
             console.log('response in reportImage')
             console.log(response)
@@ -99,7 +87,7 @@ class ImageDisplayComponent extends React.Component {
         console.log(`id in getImageData: ${id}`)
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/get-image/${id}`,
+                `${this.getAPIURLBase()}/get-image/${id}`,
                 { responseType: 'blob' }
             )
             console.log('response in getImageData')
@@ -118,8 +106,9 @@ class ImageDisplayComponent extends React.Component {
         }
     }
 
+    // JSX construction methods
     controlPanel() {
-        const { isAuthenticated, user } = this.props.auth0;
+        const { isAuthenticated } = this.props.auth0;
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
 
@@ -135,16 +124,14 @@ class ImageDisplayComponent extends React.Component {
 
         return (
             <div style={CSS.listDisplayStyle('10px')}>
-                    <button style={deleteImageStyle} onClick={async () => {this.reportImage(this.state.id)}}>
-                            Report
-                    </button>
+                <button style={deleteImageStyle} onClick={async () => {this.reportImage(this.state.id)}}>
+                        Report
+                </button>
             </div>
         )
     }
 
     render() {
-        // console.log('props in ImageDisplayComponent render:')
-        // console.log(this.props)
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const listHeadline = this.props.isMyImage ? this.state.name : `${this.state.name} - created by ${this.state.creator}`
 

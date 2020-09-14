@@ -6,6 +6,8 @@ import { Grid, Cell } from "styled-css-grid";
 import ImageDisplayComponent from './imageDisplay.js'
 
 class ImageListComponent extends React.Component {
+
+    // Component lifecycle functions
     constructor(props) {
         super(props)
 
@@ -14,7 +16,6 @@ class ImageListComponent extends React.Component {
             displayList: true,
             displayImageID: 0,
             myImages: false
-            // hold: new Blob()
         }
 
         this.getAllImageData = this.getAllImageData.bind(this)
@@ -29,6 +30,12 @@ class ImageListComponent extends React.Component {
         this.getAllImageData()
     }
 
+    getAPIURLBase() {
+        const { apiUrl } = this.props
+        return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+    }
+
+    // State management functions
     setDisplayList(myImages) {
         this.setState({
             myImages: myImages,
@@ -42,28 +49,21 @@ class ImageListComponent extends React.Component {
         myImages ? this.getUsersImageData(): this.getAllImageData()
     }
 
-    listDisplaySwitch() {
-        const { isAuthenticated } = this.props.auth0;
-        if (!isAuthenticated) {
-          return
-        }
-    
-        return (
-          <div>
-            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(false)}>
-              All Altered Images
-            </button>
-            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(true)}>
-              My Altered Images
-            </button>
-          </div>
-        )
-      }
-
     getListdata() {
         this.state.listAllImages ? this.getAllImageData(): this.getUsersImageData()
     }
 
+    loadSingleImage(imageId) {
+        this.setState({
+            displayList: false,
+            displayImageID: imageId
+        },  () => {
+            console.log('state in set state in loadSingleImage')
+            console.log(this.state);
+        });
+    }
+
+    // API contact functions
     async getUsersImageData() {
         console.log('getUsersImageData')
         const { isAuthenticated, user } = this.props.auth0;
@@ -72,12 +72,9 @@ class ImageListComponent extends React.Component {
             return false
         }
 
-        
-
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/get-my-image-data/${user.email}`,
-                // { responseType: 'blob' }
+                `${this.getAPIURLBase()}/get-my-image-data/${user.email}`,
             )
             console.log('response in getUsersImageData')
             console.log(response)
@@ -106,7 +103,9 @@ class ImageListComponent extends React.Component {
         return {
             'id': image.id,
             'displayName': image.displayName,
-            'fileBlob': blob
+            'fileBlob': blob,
+            'creatorName': image.creatorEmail,
+            'createdAt': image.createdAt
         }
     }
 
@@ -114,8 +113,7 @@ class ImageListComponent extends React.Component {
         console.log('getAllImageData')
         try {
             const response = await axios.get(
-                `http://127.0.0.1:5000/get-all-images`,
-                // { responseType: 'blob' }
+                `${this.getAPIURLBase()}/get-all-images`,
             )
             console.log('response in getAllImageData')
             console.log(response)
@@ -129,7 +127,6 @@ class ImageListComponent extends React.Component {
 
             this.setState({
                 imageList: imageList,
-                // hold: blob
             },  () => {
                 console.log('state in set state in getAllImageData')
                 console.log(this.state);
@@ -140,16 +137,26 @@ class ImageListComponent extends React.Component {
         }
     }
 
-    loadSingleImage(imageId) {
-        console.log(imageId)
-        this.setState({
-            displayList: false,
-            displayImageID: imageId
-        },  () => {
-            console.log('state in set state in loadSingleImage')
-            console.log(this.state);
-        });
-    }
+    
+
+    // JSX construction functions
+    listDisplaySwitch() {
+        const { isAuthenticated } = this.props.auth0;
+        if (!isAuthenticated) {
+          return
+        }
+    
+        return (
+          <div>
+            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(false)}>
+              All Altered Images
+            </button>
+            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(true)}>
+              My Altered Images
+            </button>
+          </div>
+        )
+      }
 
     displaySingleImage() {
         const {displayList, displayImageID, myImages} = this.state
@@ -185,19 +192,24 @@ class ImageListComponent extends React.Component {
         const gridStyle = CSS.gridStyle()
         const gridItemStyle = CSS.gridItemStyle()
         const imageStyle = CSS.imageListDisplayStyle()
+        const imageListTextStyle = CSS.imageListTextStyle()
+        const listItemContainerStyle = CSS.listItemContainerStyle()
 
         return (
-            <Grid columns={4} gap="10px">
-                <Cell width={3}>
-                {imageList.map((image) =>
-                    
-                        <a onClick={() => this.loadSingleImage(image.id)}>
-                            <div>{image.displayName}</div>
-                            <div>
+            <Grid columns={1} gap="10px">
+                <Cell width={12}>
+                {imageList.map((image) =>    
+                    <a onClick={() => this.loadSingleImage(image.id)}>
+                        <div style={listItemContainerStyle}>
                             <img style={imageStyle} src={ URL.createObjectURL(image.fileBlob)} />
-                            </div>
-                        </a>
-                    
+                            <h4 style={imageListTextStyle}>{image.displayName}</h4>
+                            {!myImages ? 
+                                <p>Created by {image.creatorName} on {image.createdAt}</p> :
+                                <p>Created on {image.createdAt}</p>
+                            }
+                        </div>
+                        
+                    </a>
                 )}
                 </Cell>
             </Grid>
@@ -232,9 +244,7 @@ class ImageListComponent extends React.Component {
         return (
             <div>
                 {currentDisplay}
-                
             </div>
-            
         )
     }
 }

@@ -33,9 +33,25 @@ class CSS {
         }
     }
 
+    static listItemContainerStyle() {
+        return {
+            padding: '20px',
+            borderBottom: '1px solid #FFF',
+            // borderTopStyle: 'solid'
+        }
+    }
+
+    static imageListTextStyle() {
+        return {
+            float: 'right',
+            padding: '4px'
+        }
+    }
+
     static imageListDisplayStyle() {
         return {
-            width: '100px'
+            width: '100px',
+            padding: '6px'
         }
     }
 
