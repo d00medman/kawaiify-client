@@ -19,7 +19,7 @@ class CSS {
         }
     }
 
-    static listSelectorStyle() {
+    static listSelectorStyle(isActive) {
         return {
             background: 'none',
             color: '#FFF',
@@ -27,7 +27,7 @@ class CSS {
             margin: '0 0.65em',
             minWidth: '3em',
             lineHeight: '36.4px',
-            border: 'none',
+            border: isActive ? '1px solid #FFF' : 'none',
             borderRadius: '8px',
             fontFamily: 'Bookman, URW Bookman L, serif'
         }
@@ -52,6 +52,13 @@ class CSS {
         return {
             width: '100px',
             padding: '6px'
+        }
+    }
+
+    static imagePreviewDisplayStyle() {
+        return {
+            width: '450px',
+            padding: '5px'
         }
     }
 
@@ -88,7 +95,7 @@ class CSS {
             float: float,
             height:'75%',
             padding: '10px',
-            width:'auto',
+            width:'45%',
         }
     }
 

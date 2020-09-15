@@ -6,7 +6,7 @@ import CSS from './css.js'
 import ImageListComponent from './modules/imageList.js'
  
 class App extends React.Component {
-  prodAPIURL = 'https://steg-interview-project.ue.r.appspot.com'
+  prodAPIURL = 'https://backend-dot-steg-interview-project.ue.r.appspot.com'
 
   constructor(props) {
     super(props)
@@ -60,7 +60,7 @@ class App extends React.Component {
       return(
         <div style={listDisplayStyle}>
           <ImageListComponent 
-            prodAPIURL={this.productAPIURL}
+            prodAPIURL={this.prodAPIURL}
           />
         </div>
       )
@@ -75,7 +75,7 @@ class App extends React.Component {
           
           <div style={listDisplayStyle}>
             <ImageListComponent
-              prodAPIURL={this.productAPIURL}
+              prodAPIURL={this.prodAPIURL}
             />
           </div>
         </div>
@@ -87,7 +87,9 @@ class App extends React.Component {
             {this.mainDisplaySwitch()}
           </div>
           <div style={listDisplayStyle}>
-            <ImagePreviewUploadComponent />
+            <ImagePreviewUploadComponent 
+              prodAPIURL={this.prodAPIURL}
+            />
           </div>
         </div>
       )

@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import CSS from '../css.js'
 import { withAuth0 } from '@auth0/auth0-react';
+import Loader from 'react-loader-spinner'
 
 class ImageDisplayComponent extends React.Component {
 
@@ -10,9 +11,10 @@ class ImageDisplayComponent extends React.Component {
         super(props)
         this.state = {
             id: props.imageId,
-            name: '',
-            creator: '',
-            picture: new Blob(),
+            fileName: '',
+            creatorEmail: '',
+            cloudUrl: '',
+            isLoading: false,
         }
 
         this.getImageData = this.getImageData.bind(this)
@@ -23,8 +25,10 @@ class ImageDisplayComponent extends React.Component {
     }
 
     getAPIURLBase() {
-        const { apiUrl } = this.props
-        return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+        const { prodAPIURL } = this.props
+        console.log(this.props.prodAPIURL)
+        return prodAPIURL ? prodAPIURL : 'http://127.0.0.1:5000'
+        // return 'http://127.0.0.1:5000'
     }
 
     // API contact functions
@@ -35,6 +39,13 @@ class ImageDisplayComponent extends React.Component {
             console.log(`only authenticated users should be able to delete files`)
             return false
         }
+
+        this.setState({
+            isLoading: true
+        }, () => {
+            console.log('set state to loading in deleteMyImage')
+        })
+  
 
         const token = await getAccessTokenSilently()
         console.log('get access token in delete my image')
@@ -50,7 +61,12 @@ class ImageDisplayComponent extends React.Component {
             )
             console.log('response in deleteMyImage')
             console.log(response)
-            if (response.stats === '200') {
+            if (response.status === 200) {
+                this.setState({
+                    isLoading: false
+                }, () => {
+                    console.log('set state to loading in deleteMyImage')
+                })
                 // Redirects us back to the appropriate list view 
                 this.props.setDisplayList(true)
             } else {
@@ -70,7 +86,7 @@ class ImageDisplayComponent extends React.Component {
             console.log('response in reportImage')
             console.log(response)
 
-            if (response.stats === 200) {
+            if (response.status === 200) {
                 // Redirects us back to the appropriate list view 
                 this.props.setDisplayList(false)
             } else {
@@ -88,14 +104,14 @@ class ImageDisplayComponent extends React.Component {
         try {
             const response = await axios.get(
                 `${this.getAPIURLBase()}/get-image/${id}`,
-                { responseType: 'blob' }
+                // { responseType: 'blob' }
             )
             console.log('response in getImageData')
             console.log(response)
             this.setState({
-                picture: response.data,
-                name: response.headers['image_name'],
-                creator: response.headers['image_creator']
+                cloudUrl: response.data.cloudUrl,
+                fileName: response.data.fileName,
+                creatorEmail: response.data.creatorEmail
             },  () => {
                 console.log('state in set state in list images')
                 console.log(this.state);
@@ -112,10 +128,12 @@ class ImageDisplayComponent extends React.Component {
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
 
+        const { id } = this.state
+
         if (isAuthenticated && this.props.isMyImage) {
             return (
                 <div style={listDisplayStyle}>
-                    <button style={deleteImageStyle} onClick={async () => {this.deleteMyImage(this.state.id)}}>
+                    <button style={deleteImageStyle} onClick={async () => {this.deleteMyImage(id)}}>
                             Delete
                     </button>
                 </div>
@@ -124,16 +142,20 @@ class ImageDisplayComponent extends React.Component {
 
         return (
             <div style={CSS.listDisplayStyle('10px')}>
-                <button style={deleteImageStyle} onClick={async () => {this.reportImage(this.state.id)}}>
-                        Report
+                <button style={deleteImageStyle} onClick={async () => {this.reportImage(id)}}>
+                    Report
                 </button>
             </div>
         )
     }
 
+    // URL.createObjectURL(this.state.picture)
+
     render() {
+        const { fileName, creatorEmail, cloudUrl, isLoading } = this.state
+
         const listDisplayStyle = CSS.listDisplayStyle('10px')
-        const listHeadline = this.props.isMyImage ? this.state.name : `${this.state.name} - created by ${this.state.creator}`
+        const listHeadline = this.props.isMyImage ? fileName : `${fileName} - created by ${creatorEmail}`
 
         return (
             <div>
@@ -142,7 +164,9 @@ class ImageDisplayComponent extends React.Component {
                 </div>
 
                 <div style={listDisplayStyle}>
-                    <img style={CSS.imageDisplayStyle()} src={ URL.createObjectURL(this.state.picture)} />
+                    {!isLoading ? 
+                        <img style={CSS.imageDisplayStyle()} src={cloudUrl} />
+                        : <Loader type="Bars" color="#eb726a" height={80} width={80} float="right" />}
                 </div>
 
                 <div style={listDisplayStyle}>

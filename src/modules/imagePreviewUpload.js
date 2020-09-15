@@ -4,6 +4,7 @@ import axios from 'axios';
 import { withAuth0 } from '@auth0/auth0-react';
 import Select from 'react-select';
 import CSS from '../css.js'
+import Loader from 'react-loader-spinner'
 
 // Indentation is a bit screwy in this file, and I didn't want to waste the time harmonizing it
  
@@ -22,7 +23,8 @@ class ImagePreviewUploadComponent extends React.Component {
       this.state = { 
         pictures: [],
         hasPreview: false,
-        preview: new Blob(),
+        isLoading: false,
+        cloudUrl: '',
         imageId: 0,
         chosenEffects: [],
         imageName: ''
@@ -64,8 +66,9 @@ class ImagePreviewUploadComponent extends React.Component {
     }
 
   getAPIURLBase() {
-    const { apiUrl } = this.props
-    return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+    const { prodAPIURL } = this.props
+    return prodAPIURL ? prodAPIURL : 'http://127.0.0.1:5000'
+    // return 'http://127.0.0.1:5000'
   }
 
 
@@ -73,6 +76,13 @@ class ImagePreviewUploadComponent extends React.Component {
   async uploadImage() {
         const { user, getAccessTokenSilently  } = this.props.auth0;
         const { chosenEffects, pictures, imageName} = this.state
+
+        this.setState({
+          hasPreview:true,
+          isLoading: true
+        }, () => {
+          console.log('set state to loading in uploadImage')
+        })
 
         var bodyFormData = new FormData();
         bodyFormData.append('image', pictures[0]);
@@ -91,13 +101,15 @@ class ImagePreviewUploadComponent extends React.Component {
                   'Content-Type': 'multipart/form-data',
                   Authorization: `Bearer ${token}`,
                 },
-                responseType: 'blob'
+                // responseType: 'blob'
               }
           )
+          console.log('response in uploadImage:')
+          console.log(response)
           this.setState({
-            preview: response.data,
-            hasPreview: true,
-            imageId: response.headers['image_id']
+            cloudUrl: response.data.cloudUrl,
+            isLoading: false,
+            imageId: response.data.id
           },  () => {
             console.log('state in uploadPreview')
             console.log(this.state);
@@ -162,7 +174,7 @@ class ImagePreviewUploadComponent extends React.Component {
             return <h3>Please log in to add effects to images</h3>
         }
 
-        const { chosenEffects, pictures, preview, hasPreview, imageId } = this.state;
+        const { chosenEffects, pictures, preview, hasPreview, imageId, cloudUrl, isLoading } = this.state;
         const listDisplayStyle = CSS.listDisplayStyle('10px')
         const imageUploaderLeftStyle = CSS.imageUploadComponentStyle('left') 
         const uploadButtonStyle = CSS.filledButtonStyle('#6be8c7') 
@@ -171,7 +183,8 @@ class ImagePreviewUploadComponent extends React.Component {
         const imageUploaderRightStyle = CSS.imageUploadComponentStyle('right')
         const mainHeadlineStyle = CSS.mainHeadlineStyle()
         const deleteImageStyle = CSS.filledButtonStyle('#eb726a')
-        
+        // const imagePreviewStyle = CSS.listDisplayStyle('2px')
+
         const selectStyles = {
           option: (provided, state) => ({
             ...provided,
@@ -227,13 +240,18 @@ class ImagePreviewUploadComponent extends React.Component {
                       </button>
                     </div>}
                 </div>
-                {hasPreview && 
+                {hasPreview &&
                   <div style={imageUploaderRightStyle}>
-                      <img style={imageDisplayStyle} src={ URL.createObjectURL(preview)} />
+                  {!isLoading ? (
+                    <div style={imageUploaderRightStyle}>
+                      <img style={imageDisplayStyle} src={cloudUrl} />
                       <button style={deleteImageStyle} onClick={async () => {this.deleteMyImage(imageId)}}>
-                            Delete
-                    </button>
-                  </div>}
+                        Delete
+                      </button>
+                    </div>) :
+                    (<Loader type="Bars" color="#00BFFF" height={80} width={80} float="right" />)}
+                    </div>
+                  }
               </div>
             </div>
           </div>

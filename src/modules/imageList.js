@@ -31,8 +31,11 @@ class ImageListComponent extends React.Component {
     }
 
     getAPIURLBase() {
-        const { apiUrl } = this.props
-        return apiUrl ? apiUrl : 'http://127.0.0.1:5000'
+        const { prodAPIURL } = this.props
+        console.log(this.props)
+        console.log(`api url ${this.props.prodAPIURL}`)
+        return prodAPIURL ? prodAPIURL : 'http://127.0.0.1:5000'
+        // return 'http://127.0.0.1:5000'
     }
 
     // State management functions
@@ -76,15 +79,9 @@ class ImageListComponent extends React.Component {
             const response = await axios.get(
                 `${this.getAPIURLBase()}/get-my-image-data/${user.email}`,
             )
-            console.log('response in getUsersImageData')
-            console.log(response)
-
-            const imageList = response.data.map((element) => (
-                this.imageDataWithBlob(element)
-            ));
 
             this.setState({
-                imageList: imageList
+                imageList: response.data
             },  () => {
                 console.log('state in set state in getUsersImageData')
                 console.log(this.state);
@@ -117,16 +114,9 @@ class ImageListComponent extends React.Component {
             )
             console.log('response in getAllImageData')
             console.log(response)
-            
-            const imageList = response.data.map((element) => (
-                this.imageDataWithBlob(element)
-            ));
-            
-            console.log('image list')
-            console.log(imageList)
 
             this.setState({
-                imageList: imageList,
+                imageList: response.data,
             },  () => {
                 console.log('state in set state in getAllImageData')
                 console.log(this.state);
@@ -145,13 +135,15 @@ class ImageListComponent extends React.Component {
         if (!isAuthenticated) {
           return
         }
+
+        const { myImages } = this.state
     
         return (
           <div>
-            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(false)}>
+            <button style={CSS.listSelectorStyle(myImages === false)} onClick={() => this.setDisplayList(false)}>
               All Altered Images
             </button>
-            <button style={CSS.listSelectorStyle()} onClick={() => this.setDisplayList(true)}>
+            <button style={CSS.listSelectorStyle(myImages === true)} onClick={() => this.setDisplayList(true)}>
               My Altered Images
             </button>
           </div>
@@ -176,6 +168,7 @@ class ImageListComponent extends React.Component {
                     imageId={displayImageID}
                     isMyImage={myImages}
                     setDisplayList={this.setDisplayList}
+                    prodAPIURL={this.props.prodAPIURL}
                 />
             </div>
         ) 
@@ -189,8 +182,6 @@ class ImageListComponent extends React.Component {
             return isAuthenticated && myImages ? <h3>You have no Kawaiified images</h3> : <h3>No images have been kawaiified</h3>
         }
 
-        const gridStyle = CSS.gridStyle()
-        const gridItemStyle = CSS.gridItemStyle()
         const imageStyle = CSS.imageListDisplayStyle()
         const imageListTextStyle = CSS.imageListTextStyle()
         const listItemContainerStyle = CSS.listItemContainerStyle()
@@ -201,10 +192,10 @@ class ImageListComponent extends React.Component {
                 {imageList.map((image) =>    
                     <a onClick={() => this.loadSingleImage(image.id)}>
                         <div style={listItemContainerStyle}>
-                            <img style={imageStyle} src={ URL.createObjectURL(image.fileBlob)} />
+                            <img style={imageStyle} src={image.cloudUrl} />
                             <h4 style={imageListTextStyle}>{image.displayName}</h4>
                             {!myImages ? 
-                                <p>Created by {image.creatorName} on {image.createdAt}</p> :
+                                <p>Created by {image.creatorEmail} on {image.createdAt}</p> :
                                 <p>Created on {image.createdAt}</p>
                             }
                         </div>
@@ -222,12 +213,12 @@ class ImageListComponent extends React.Component {
         const { myImages } = this.state
         const listDisplayStyle = CSS.listDisplayStyle('10px')
 
-        const listHeadline = myImages ? `Images kawaiified by ${user.email}` : 'All images kawaiified by users'
+        const listHeadline = myImages ? `Images kawaiified by ${user.email}` : 'Images kawaiified by all users'
 
         return (
             <div >
                 <div style={listDisplayStyle}>
-                        <h3 style={CSS.mainHeadlineStyle()}>{listHeadline}</h3>
+                    <h3 style={CSS.mainHeadlineStyle()}>{listHeadline}</h3>
                 </div>
 
                 {isAuthenticated && <div style={listDisplayStyle}>
